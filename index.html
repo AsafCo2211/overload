@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Overload</title>
+<meta name="apple-mobile-web-app-title" content="Overload">
+<meta name="application-name" content="Overload">
+<meta name="theme-color" content="#15171A">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+  html, body { margin: 0; height: 100%; background: #15171A; color: #F2F2EF; font-family: system-ui, -apple-system, sans-serif; }
+  body { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; }
+  img { width: 96px; height: 96px; border-radius: 22px; }
+  a { color: #C6F432; font-size: 15px; }
+  p { margin: 0; color: #A3A8AE; font-size: 15px; }
+</style>
+</head>
+<body>
+<img src="apple-touch-icon.png" alt="">
+<p>פותח את Overload…</p>
+<a id="go" href="https://script.google.com/macros/s/AKfycbxJ2NGXaBaTz_Uw51pLPb9pDLt49tAjvBvz-t5Xlocq-7PQ263uk9pLQnFm6lhawfn05Q/exec">אם לא נפתח, לחץ כאן</a>
+<script>
+  // עמוד פתיחה בלבד: נותן לאפליקציה שם ואייקון במסך הבית, ומעביר מיד לאפליקציה בגוגל.
+  location.replace(document.getElementById('go').href);
+</script>
+</body>
+</html>
