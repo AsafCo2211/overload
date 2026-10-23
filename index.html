@@ -12,9 +12,15 @@
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="manifest" href="manifest.webmanifest">
 <script>
-  // נפתח ממסך הבית (הקישור השמור כולל launch=1): מעבירים מיד לאפליקציה בגוגל.
+  // בפעם הראשונה מציגים הוראות התקנה, ומסמנים בטלפון שהן הוצגו.
+  // מכל פתיחה אחרי זה (בדרך כלל מהאייקון במסך הבית) מעבירים מיד לאפליקציה בגוגל.
+  // כדי לראות שוב את ההוראות: להוסיף לכתובת ?setup=1
   var APP = 'https://script.google.com/macros/s/AKfycbxJ2NGXaBaTz_Uw51pLPb9pDLt49tAjvBvz-t5Xlocq-7PQ263uk9pLQnFm6lhawfn05Q/exec';
-  if (new URLSearchParams(location.search).get('launch') === '1') location.replace(APP);
+  var KEY = 'overload_setup_seen';
+  var q = new URLSearchParams(location.search);
+  var seen = false;
+  try { seen = localStorage.getItem(KEY) === '1'; } catch (e) {}
+  if (q.get('setup') !== '1' && (seen || q.get('launch') === '1')) location.replace(APP);
 </script>
 <style>
   html, body { margin: 0; min-height: 100%; background: #15171A; color: #F2F2EF; font-family: system-ui, -apple-system, sans-serif; }
@@ -40,8 +46,7 @@
 </ol>
 <a class="btn" id="go" href="https://script.google.com/macros/s/AKfycbxJ2NGXaBaTz_Uw51pLPb9pDLt49tAjvBvz-t5Xlocq-7PQ263uk9pLQnFm6lhawfn05Q/exec">לפתוח את האפליקציה</a>
 <script>
-  // הכתובת שהאייפון שומר במסך הבית היא הכתובת הנוכחית, אז מוסיפים לה את הסימון בלי לטעון מחדש.
-  try { history.replaceState(null, '', '?launch=1'); } catch (e) {}
+  try { localStorage.setItem(KEY, '1'); } catch (e) {}
 </script>
 </body>
 </html>
