@@ -11,21 +11,37 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="manifest" href="manifest.webmanifest">
+<script>
+  // נפתח ממסך הבית (הקישור השמור כולל launch=1): מעבירים מיד לאפליקציה בגוגל.
+  var APP = 'https://script.google.com/macros/s/AKfycbxJ2NGXaBaTz_Uw51pLPb9pDLt49tAjvBvz-t5Xlocq-7PQ263uk9pLQnFm6lhawfn05Q/exec';
+  if (new URLSearchParams(location.search).get('launch') === '1') location.replace(APP);
+</script>
 <style>
-  html, body { margin: 0; height: 100%; background: #15171A; color: #F2F2EF; font-family: system-ui, -apple-system, sans-serif; }
-  body { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; }
-  img { width: 96px; height: 96px; border-radius: 22px; }
-  a { color: #C6F432; font-size: 15px; }
-  p { margin: 0; color: #A3A8AE; font-size: 15px; }
+  html, body { margin: 0; min-height: 100%; background: #15171A; color: #F2F2EF; font-family: system-ui, -apple-system, sans-serif; }
+  body { display: flex; flex-direction: column; align-items: center; padding: 64px 24px 40px; box-sizing: border-box; gap: 18px; text-align: center; }
+  img { width: 104px; height: 104px; border-radius: 24px; }
+  h1 { margin: 0; font-size: 28px; }
+  p { margin: 0; color: #A3A8AE; font-size: 15px; line-height: 1.6; }
+  ol { margin: 8px 0 0; padding: 18px 22px 18px 18px; background: #1F2226; border-radius: 18px; text-align: right; font-size: 16px; line-height: 1.9; width: 100%; max-width: 360px; box-sizing: border-box; }
+  ol svg { vertical-align: -4px; }
+  a.btn { margin-top: 10px; display: block; width: 100%; max-width: 360px; box-sizing: border-box; padding: 16px; border-radius: 16px; background: #C6F432; color: #15171A; font-weight: 800; font-size: 17px; text-decoration: none; }
 </style>
 </head>
 <body>
 <img src="apple-touch-icon.png" alt="">
-<p>פותח את Overload…</p>
-<a id="go" href="https://script.google.com/macros/s/AKfycbxJ2NGXaBaTz_Uw51pLPb9pDLt49tAjvBvz-t5Xlocq-7PQ263uk9pLQnFm6lhawfn05Q/exec">אם לא נפתח, לחץ כאן</a>
+<h1>Overload</h1>
+<p>כדי לקבל את האייקון במסך הבית, מוסיפים מהעמוד הזה:</p>
+<ol>
+  <li>לוחצים על כפתור השיתוף
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C6F432" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 12v8h14v-8"/></svg>
+  </li>
+  <li>בוחרים "הוספה למסך הבית"</li>
+  <li>לוחצים "הוספה"</li>
+</ol>
+<a class="btn" id="go" href="https://script.google.com/macros/s/AKfycbxJ2NGXaBaTz_Uw51pLPb9pDLt49tAjvBvz-t5Xlocq-7PQ263uk9pLQnFm6lhawfn05Q/exec">לפתוח את האפליקציה</a>
 <script>
-  // עמוד פתיחה בלבד: נותן לאפליקציה שם ואייקון במסך הבית, ומעביר מיד לאפליקציה בגוגל.
-  location.replace(document.getElementById('go').href);
+  // הכתובת שהאייפון שומר במסך הבית היא הכתובת הנוכחית, אז מוסיפים לה את הסימון בלי לטעון מחדש.
+  try { history.replaceState(null, '', '?launch=1'); } catch (e) {}
 </script>
 </body>
 </html>
