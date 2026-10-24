@@ -65,6 +65,11 @@
   .sheet-wrap { position: fixed; inset: 0; background: rgba(5, 6, 7, 0.72); display: flex; align-items: flex-end; justify-content: center; z-index: 10; }
   .sheet { width: 100%; max-width: 480px; max-height: 88vh; overflow-y: auto; background: var(--surface); border-radius: 28px 28px 0 0; padding: 12px 18px max(22px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 14px; }
   .grabber { width: 40px; height: 5px; border-radius: 999px; background: var(--line); align-self: center; }
+  .gyms { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: var(--surface); border-radius: 16px; padding: 4px; }
+  .gym { border: none; background: transparent; color: var(--soft, #A9ADB3); font-family: inherit; border-radius: 12px; padding: 8px 6px; display: flex; flex-direction: column; align-items: center; gap: 1px; cursor: pointer; }
+  .gym b { font-size: 15px; }
+  .gym span { font-size: 12px; opacity: .8; }
+  .gym.on { background: var(--accent); color: #15171A; }
   .figure { background: var(--bg); border-radius: 18px; padding: 12px 6px 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
   .legend { width: 16px; height: 16px; border-radius: 5px; flex-shrink: 0; }
   .warnbox { background: var(--warn-bg); border-radius: 14px; padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start; }
@@ -103,7 +108,7 @@ function store(k, v) { try { if (v === null) localStorage.removeItem(k); else lo
 function load(k) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
 function pair(w, r) { return '\u2066' + fmt(w) + ' × ' + r + '\u2069'; }
-function ltr(x) { return '\u2066' + x + '\u2069'; }
+function ltr(x) { return '\u2066' + String(x).replace(/ /g, '\u00A0') + '\u2069'; } // רווח קשיח: הצמד לא נשבר בין שורות
 function rirNum(r) { if (r === null || r === undefined || r === '') return null; return num(String(r).replace('+', '')); }
 function parseRange(s) { if (!s) return null; var m = String(s).match(/(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)/); if (m) return [num(m[1]), num(m[2])]; var n = num(s); return n === null ? null : [n, n]; }
 function ddmm(iso) { var p = iso.split('-'); return p[2] + '/' + p[1]; }
@@ -135,7 +140,7 @@ function workoutRows(n) { var w = workouts().filter(function (x) { return x.n ==
 function weightType(row) { return String(row['סוג משקל'] || '').trim(); }
 function isBody(row) { return weightType(row) === 'משקל גוף'; }
 function weightLabel(row) { var t = weightType(row); return t === 'לכל צד' ? 'משקל לכל צד' : t === 'משקל גוף' ? 'משקל נוסף' : 'משקל'; }
-function unitShort(row) { return weightType(row) === 'לכל צד' ? ' כ״צ' : ''; }
+function unitShort(row) { return weightType(row) === 'לכל צד' ? ' \u2067כ״צ\u2069' : ''; }
 function stepOf(row) {
   var s = num(row['קפיצת משקל (ק״ג)']);
   if (s) return s;
@@ -149,10 +154,24 @@ function restSecs(row) { return num(row['מנוחה (שניות)']) || 90; }
 function isCore(row) { return String(row['סוג תרגיל'] || '').trim() === 'מרכזי'; }
 function alts(row) { return [row['חלופה 1'], row['חלופה 2']].map(function (x) { return String(x || '').trim(); }).filter(Boolean); }
 
-/** הסשן האחרון (לא מהיום) של תרגיל מסוים לפי השם שבוצע בפועל. */
-function lastSession(name) {
+/* ===================== מכונים ===================== */
+// במכונות ובפולי המשקלים שונים בין מכונים, לכן ההיסטוריה שלהם נפרדת לכל מכון.
+// משקולות יד ומוטות זהים בכל מקום, ולהם יש היסטוריה אחת משותפת.
+var GYMS = ['Icon', 'BeActive'], HOME_GYM = 'Icon', GYM_CITY = { Icon: 'באר שבע', BeActive: 'קריית שמונה' };
+var KEY_GYM = 'overload_gym';
+function currentGym() {
+  if (S.session && S.session.gym && S.screen !== 'home') return S.session.gym;
+  return currentGymSetting();
+}
+function setGym(g) { try { localStorage.setItem(KEY_GYM, g); } catch (e) {} }
+function currentGymSetting() { var g = null; try { g = localStorage.getItem(KEY_GYM); } catch (e) {} return GYMS.indexOf(g) >= 0 ? g : HOME_GYM; }
+function recGym(r) { return r.gym || HOME_GYM; }
+function isMachine(name) { return /מכונ|פולי|סמית/.test(String(name)); }
+
+/** הסשן האחרון (לא מהיום) של תרגיל מסוים לפי השם שבוצע בפועל. אם נמסר מכון, רק ממנו. */
+function lastSession(name, gym) {
   var t = today();
-  var rows = S.data.log.filter(function (r) { return r.exercise === name && r.date < t; });
+  var rows = S.data.log.filter(function (r) { return r.exercise === name && r.date < t && (!gym || recGym(r) === gym); });
   if (!rows.length) return null;
   var d = rows.reduce(function (m, r) { return r.date > m ? r.date : m; }, '');
   var sets = rows.filter(function (r) { return r.date === d; }).sort(function (a, b) { return (num(a.set) || 0) - (num(b.set) || 0); });
@@ -171,9 +190,22 @@ function bestSet(sets) {
 function recommend(row, name) {
   var target = targetReps(row), top = target + 2, st = stepOf(row);
   var rr = parseRange(row['חזרות בטנק יעד']);
-  var h = lastSession(name);
+  var gym = currentGym(), machine = isMachine(name);
+  var h = lastSession(name, machine ? gym : null);
+  if (!h && machine) {
+    var other = lastSession(name);
+    if (other) {
+      var ob = bestSet(other.sets);
+      return {
+        w: ob.w, r: target, first: true,
+        text: 'פעם ראשונה במכונה הזאת ב־' + gym + '. ב־' + recGym(other.sets[0]) + ' עשית ' + ltr(fmt(ob.w) + ' × ' + ob.r) +
+          ' (' + ddmm(other.date) + '). המכונות שונות, אז תתחיל קל ותתאים לפי מה שנשאר בטנק. מהפעם הבאה ההמלצה תהיה לפי המכון הזה.'
+      };
+    }
+  }
   if (!h) {
     var w0 = name === String(row['תרגיל']) ? num(row['משקל (ק״ג)']) : null;
+    if (machine && gym !== HOME_GYM) w0 = null;
     if (isBody(row) && w0 === null) w0 = 0;
     return {
       w: w0, r: target, first: true,
@@ -217,9 +249,13 @@ function swapsLast30(slotName) {
 /* ===================== סשן ===================== */
 function saveSession() { store(KEY_SESSION, S.session); }
 function startWorkout(n) {
-  if (S.session && S.session.workout === n && S.session.date === today()) { S.screen = 'ex'; render(); return; }
+  var gym = currentGymSetting();
+  if (S.session && S.session.workout === n && S.session.date === today()) {
+    if (S.session.gym !== gym) { S.session.gym = gym; if (!doneSets().length) prepareInputs(); saveSession(); }
+    S.screen = 'ex'; render(); return;
+  }
   var rows = workoutRows(n);
-  S.session = { workout: n, date: today(), idx: 0, choice: {}, sets: {}, inputs: null };
+  S.session = { workout: n, date: today(), idx: 0, choice: {}, sets: {}, inputs: null, gym: gym };
   rows.forEach(function (row, i) {
     // אם כבר נרשמו היום סטים באימון הזה (למשל אחרי שסיימת וחזרת), טוענים אותם כדי שאפשר יהיה לתקן
     var slot = String(row['תרגיל']);
@@ -264,7 +300,7 @@ function saveSet() {
     id: uid(), date: S.session.date, workout: S.session.workout, exercise: name,
     muscle: String(row['שריר עיקרי'] || ''), set: setNo, weight: w === null ? 0 : w,
     weightType: weightType(row), reps: r, rir: inp.rir === null ? '' : inp.rir, note: '',
-    slot: String(row['תרגיל'])
+    slot: String(row['תרגיל']), gym: S.session.gym || HOME_GYM
   };
   S.session.sets[S.session.idx].push(rec);
   S.data.log.push(rec);
@@ -557,7 +593,11 @@ function renderSheet() {
 function viewHome() {
   var t = today(), ws = weekStart(t);
   var h = '<div class="between"><div style="display:flex;flex-direction:column;gap:2px"><span class="muted">השבוע</span><span style="font-size:17px;font-weight:700">' + ddmm(ws) + ' עד ' + ddmm(addDays(ws, 6)) + '</span></div><span id="sync">' + syncHtml() + '</span></div>';
-  h += '<h1 style="font-size:30px;margin-top:6px">באיזה אימון<br>אתה היום?</h1>';
+  var g = currentGymSetting();
+  h += '<div class="gyms" role="group" aria-label="באיזה מכון">' + GYMS.map(function (x) {
+    return '<button class="gym' + (x === g ? ' on' : '') + '" data-act="gym" data-v="' + x + '" aria-pressed="' + (x === g) + '"><b>' + x + '</b><span>' + GYM_CITY[x] + '</span></button>';
+  }).join('') + '</div>';
+  h += '<h1 style="font-size:30px;margin-top:2px">באיזה אימון<br>אתה היום?</h1>';
   var active = S.session && S.session.date === t && !allDoneFor(S.session) ? S.session.workout : null;
   var hotN = active;
   if (hotN === null) {
@@ -596,7 +636,7 @@ function viewEx() {
     '<div style="display:flex;flex-direction:column;gap:6px;flex-grow:1"><div class="between"><span class="muted">אימון ' + S.session.workout + ' · תרגיל ' + (i + 1) + ' מתוך ' + rows.length + '</span><span id="sync">' + syncHtml() + '</span></div>' +
     '<div class="progress"><div style="width:' + pct + '%"></div></div></div></div>';
 
-  h += '<div style="display:flex;flex-direction:column;gap:6px"><div class="row" style="gap:6px;flex-wrap:wrap"><span class="chip">' + esc(row['שריר עיקרי']) + '</span>' + (isCore(row) ? '<span class="chip solid">מרכזי</span>' : '') + (swapped ? '<span class="chip warn">חלופה</span>' : '') + '</div>' +
+  h += '<div style="display:flex;flex-direction:column;gap:6px"><div class="row" style="gap:6px;flex-wrap:wrap"><span class="chip">' + esc(row['שריר עיקרי']) + '</span>' + (isCore(row) ? '<span class="chip solid">מרכזי</span>' : '') + (swapped ? '<span class="chip warn">חלופה</span>' : '') + (isMachine(name) ? '<span class="chip">מכונה · ' + esc(S.session.gym || HOME_GYM) + '</span>' : '') + '</div>' +
     '<h1>' + esc(name) + '</h1>' +
     '<span class="muted">יעד: ' + planned + ' סטים · ' + targetReps(row) + ' חזרות' + (rr ? ' · ' + rr[0] + ' עד ' + rr[1] + ' בטנק' : '') + ' · מנוחה ' + Math.floor(restSecs(row) / 60) + ':' + String(restSecs(row) % 60).padStart(2, '0') + (row['הערות'] ? ' · ' + esc(row['הערות']) : '') + '</span></div>';
 
@@ -745,6 +785,7 @@ document.addEventListener('click', function (e) {
       else { goTo(S.session.idx + 1); render(); }
       break;
     case 'muscle': S.sheet = 'muscle'; renderSheet(); break;
+    case 'gym': setGym(el.dataset.v); render(); break;
     case 'swap': S.sheet = 'swap'; renderSheet(); break;
     case 'closeSheet': S.sheet = null; S.edit = null; renderSheet(); break;
     case 'editSet': openEdit(Number(el.dataset.k)); break;
