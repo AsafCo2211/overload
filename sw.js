@@ -1,7 +1,7 @@
 // שומר את קבצי האפליקציה בטלפון, כדי שתיפתח מהר וגם בלי קליטה.
 // קודם מנסים להביא גרסה עדכנית מהרשת, ורק אם אין רשת משתמשים בעותק השמור.
-const CACHE = 'overload-v3';
-const ASSETS = ['./', './index.html', './manifest.webmanifest', './apple-touch-icon.png?v=2', './icon-192.png?v=2', './icon-512.png'];
+const CACHE = 'overload-v4';
+const ASSETS = ['./', './index.html', './manifest.webmanifest', './apple-touch-icon.png?v=2', './icon-192.png?v=2', './icon-512.png', './fonts/rubik-hebrew-wght-normal.woff2', './fonts/rubik-latin-wght-normal.woff2'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));

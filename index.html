@@ -12,9 +12,13 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=2">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/rubik-hebrew-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+  /* Rubik, שמור בתוך האפליקציה כדי שיעבוד גם בלי קליטה (רישיון: fonts/OFL.txt) */
+  @font-face { font-family: 'Rubik'; font-style: normal; font-display: swap; font-weight: 300 900;
+    src: url(fonts/rubik-hebrew-wght-normal.woff2) format('woff2'); unicode-range: U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F; }
+  @font-face { font-family: 'Rubik'; font-style: normal; font-display: swap; font-weight: 300 900;
+    src: url(fonts/rubik-latin-wght-normal.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
   :root {
     --bg: #15171A; --surface: #1F2226; --surface2: #2A2E33; --line: #3A3F45;
     --text: #F2F2EF; --muted: #A3A8AE; --soft: #C9CDD2;
@@ -22,25 +26,31 @@
     --warn: #F5B53D; --warn-bg: #2B2210;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; background: var(--bg); color: var(--text); font-family: Heebo, system-ui, sans-serif; }
-  body { min-height: 100vh; }
-  #app { max-width: 480px; margin: 0 auto; min-height: 100vh; padding: max(20px, env(safe-area-inset-top)) 18px max(20px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 14px; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font-family: Rubik, system-ui, sans-serif; font-weight: 400; overscroll-behavior-y: none; }
+  /* פס אטום מאחורי השעון והסוללה, כדי שתוכן שנגלל לא ייבלע מתחתיהם */
+  body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top); background: var(--bg); z-index: 5; }
+  #app { max-width: 480px; margin: 0 auto; min-height: 100vh; min-height: 100dvh; padding: calc(env(safe-area-inset-top) + 16px) 18px max(20px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 16px; }
   button { font-family: inherit; color: inherit; cursor: pointer; }
   .row { display: flex; align-items: center; gap: 10px; }
   .between { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-  .muted { color: var(--muted); font-size: 13px; }
+  .muted { color: var(--muted); font-size: 13px; font-weight: 400; line-height: 1.5; }
   .soft { color: var(--soft); }
-  h1 { margin: 0; font-size: 24px; line-height: 1.25; font-weight: 800; }
-  .chip { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: var(--accent-bg); color: var(--accent); display: inline-flex; align-items: center; gap: 6px; }
+  h1 { margin: 0; font-size: 22px; line-height: 1.3; font-weight: 700; text-wrap: balance; }
+  h1.big { font-size: 30px; line-height: 1.2; }
+  .chip { font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 999px; background: var(--accent-bg); color: var(--accent); display: inline-flex; align-items: center; gap: 6px; }
   .chip.solid { background: var(--text); color: var(--accent-ink); font-weight: 700; }
   .chip.warn { background: var(--warn-bg); color: var(--warn); }
-  .card { background: var(--surface); border-radius: 18px; padding: 14px 16px; border: none; text-align: right; width: 100%; display: flex; flex-direction: column; gap: 6px; }
-  .card.hot { background: var(--accent); color: var(--accent-ink); }
-  .card.hot .muted { color: #2E3A0A; }
+  .card { background: var(--surface); border-radius: 18px; padding: 14px 16px; border: 1.5px solid transparent; text-align: right; width: 100%; display: flex; flex-direction: column; gap: 4px; }
+  .card.hot { border-color: var(--accent); }
+  .card .wtitle { font-size: 19px; font-weight: 700; }
+  .card .wmus { font-size: 14px; font-weight: 400; color: var(--soft); }
+  .card .status { font-size: 13px; color: var(--muted); }
+  .card.hot .status { color: var(--accent); font-weight: 600; }
   .iconbtn { width: 44px; height: 44px; border-radius: 12px; border: none; background: var(--surface); color: var(--text); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .btn { height: 56px; border-radius: 16px; border: none; background: var(--accent); color: var(--accent-ink); font-size: 17px; font-weight: 800; width: 100%; }
+  .btn { height: 56px; border-radius: 16px; border: none; background: var(--accent); color: var(--accent-ink); font-size: 17px; font-weight: 700; width: 100%; }
+  .btn.warmbtn { background: var(--warn); }
   .btn.ghost { background: transparent; border: 1.5px solid var(--line); color: var(--text); font-size: 16px; font-weight: 700; height: 52px; }
-  .btn.link { background: none; color: var(--muted); font-size: 14px; font-weight: 500; height: 44px; }
+  .btn.link { background: none; color: var(--muted); font-size: 14px; font-weight: 400; height: 44px; }
   .btn2 { height: 44px; border-radius: 12px; border: none; background: var(--surface); font-size: 14px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .progress { height: 5px; border-radius: 999px; background: var(--surface2); overflow: hidden; }
@@ -49,14 +59,33 @@
   .sets { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 6px; }
   .set { min-height: 48px; border-radius: 12px; background: #1B1E21; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; color: var(--muted); gap: 1px; padding: 4px 2px; }
   .set.done { background: var(--accent-bg); color: var(--soft); }
-  .set.done b { color: var(--accent); }
+  .set.done b { color: var(--accent); font-weight: 600; }
+  .set b { font-weight: 600; }
   .set.now { border: 1.5px solid var(--accent); color: var(--text); }
   .set.now span { color: var(--accent); }
   .inputs { background: var(--surface); border-radius: 20px; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
+  .field { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
+  .val { border: none; background: transparent; padding: 2px 6px; border-radius: 12px; font-size: 46px; font-weight: 700; line-height: 1.1; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; direction: ltr; white-space: nowrap; max-width: 100%; color: var(--text); }
+  .val:active { background: var(--surface2); }
+  .val.empty { color: var(--muted); }
+  .nudge { display: flex; gap: 8px; }
+  .mini { width: 36px; height: 30px; border-radius: 10px; border: none; background: var(--surface2); color: var(--muted); font-size: 18px; line-height: 1; }
+  .warmtog { align-self: flex-start; border: 1.5px solid var(--line); background: transparent; color: var(--muted); border-radius: 999px; height: 32px; padding: 0 12px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+  .warmtog.on { border-color: var(--warn); background: var(--warn-bg); color: var(--warn); font-weight: 600; }
+  .warms { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .warmpill { border: none; background: var(--warn-bg); color: var(--warn); border-radius: 999px; height: 28px; padding: 0 10px; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; }
+  .wheels { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .wheelbox { position: relative; display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
+  .wheelbox .band { position: absolute; left: 0; right: 0; bottom: 88px; height: 44px; background: var(--surface2); border-radius: 12px; pointer-events: none; }
+  .wheel { position: relative; height: 220px; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; padding: 88px 0;
+    -webkit-mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent); mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent); }
+  .wheel::-webkit-scrollbar { display: none; }
+  .wheel .it { height: 44px; display: flex; align-items: center; justify-content: center; scroll-snap-align: center; font-size: 19px; color: var(--muted); font-variant-numeric: tabular-nums; direction: ltr; }
+  .wheel .it.sel { font-size: 24px; font-weight: 700; color: var(--text); }
   .stepper { display: flex; flex-direction: column; align-items: center; gap: 6px; }
   .stepper .row { gap: 6px; }
   .step { width: 44px; height: 44px; border-radius: 12px; border: none; background: var(--surface2); font-size: 22px; }
-  .num { width: 70px; height: 44px; background: transparent; border: none; border-bottom: 1.5px dashed var(--line); color: var(--text); font-family: inherit; font-size: 28px; font-weight: 800; text-align: center; -moz-appearance: textfield; }
+  .num { width: 96px; height: 44px; background: transparent; border: none; border-bottom: 1.5px dashed var(--line); color: var(--text); font-family: inherit; font-size: 26px; font-weight: 700; text-align: center; -moz-appearance: textfield; }
   .num::-webkit-outer-spin-button, .num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .num:focus { outline: none; border-bottom-color: var(--accent); }
   .rirs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
@@ -76,7 +105,7 @@
   .alt { background: var(--bg); border-radius: 16px; padding: 14px 16px; border: none; text-align: right; display: flex; flex-direction: column; gap: 6px; width: 100%; }
   .ring { position: relative; width: 240px; height: 240px; align-self: center; }
   .ring .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .timer { font-size: 58px; font-weight: 800; letter-spacing: -1px; direction: ltr; }
+  .timer { font-size: 58px; font-weight: 700; letter-spacing: -1px; direction: ltr; }
   .banner { background: var(--accent-bg); border-radius: 16px; padding: 14px 16px; display: flex; gap: 12px; align-items: center; }
   .dot { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .stat { background: var(--surface); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 2px; }
@@ -124,6 +153,7 @@ var ICON = {
   swap: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C6F432" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3l4 4-4 4M21 7H9M7 21l-4-4 4-4M3 17h12"/></svg>',
   check: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#15171A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>',
   up: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
+  flame: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22c4 0 7-2.7 7-6.8 0-3.6-2.6-6.4-4.4-8.4-.4 2.2-1.6 3.6-3 4.2.3-3-1-6-3.6-8C8 6 5 9 5 14.8 5 19.3 8 22 12 22z"/></svg>',
   warn: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5B53D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;margin-top:2px"><path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17h.01"/></svg>'
 };
 
@@ -165,13 +195,16 @@ function currentGym() {
 }
 function setGym(g) { try { localStorage.setItem(KEY_GYM, g); } catch (e) {} }
 function currentGymSetting() { var g = null; try { g = localStorage.getItem(KEY_GYM); } catch (e) {} return GYMS.indexOf(g) >= 0 ? g : HOME_GYM; }
+var WARM = 'חימום';
+function isWarm(r) { return String(r.note || '') === WARM; }
+function warmSets(i) { S.session.warm = S.session.warm || {}; var k = i === undefined ? S.session.idx : i; return S.session.warm[k] = S.session.warm[k] || []; }
 function recGym(r) { return r.gym || HOME_GYM; }
 function isMachine(name) { return /מכונ|פולי|סמית/.test(String(name)); }
 
 /** הסשן האחרון (לא מהיום) של תרגיל מסוים לפי השם שבוצע בפועל. אם נמסר מכון, רק ממנו. */
 function lastSession(name, gym) {
   var t = today();
-  var rows = S.data.log.filter(function (r) { return r.exercise === name && r.date < t && (!gym || recGym(r) === gym); });
+  var rows = S.data.log.filter(function (r) { return r.exercise === name && r.date < t && !isWarm(r) && (!gym || recGym(r) === gym); });
   if (!rows.length) return null;
   var d = rows.reduce(function (m, r) { return r.date > m ? r.date : m; }, '');
   var sets = rows.filter(function (r) { return r.date === d; }).sort(function (a, b) { return (num(a.set) || 0) - (num(b.set) || 0); });
@@ -255,14 +288,15 @@ function startWorkout(n) {
     S.screen = 'ex'; render(); return;
   }
   var rows = workoutRows(n);
-  S.session = { workout: n, date: today(), idx: 0, choice: {}, sets: {}, inputs: null, gym: gym };
+  S.session = { workout: n, date: today(), idx: 0, choice: {}, sets: {}, warm: {}, inputs: null, gym: gym };
   rows.forEach(function (row, i) {
     // אם כבר נרשמו היום סטים באימון הזה (למשל אחרי שסיימת וחזרת), טוענים אותם כדי שאפשר יהיה לתקן
     var slot = String(row['תרגיל']);
     var today_ = S.data.log.filter(function (r) { return r.date === S.session.date && num(r.workout) === n && r.slot === slot; })
       .sort(function (a, b) { return (num(a.set) || 0) - (num(b.set) || 0); });
-    S.session.sets[i] = today_;
-    if (today_.length && today_[0].exercise !== slot) S.session.choice[i] = today_[0].exercise;
+    S.session.sets[i] = today_.filter(function (r) { return !isWarm(r); });
+    S.session.warm[i] = today_.filter(isWarm);
+    if (today_.length && today_[today_.length - 1].exercise !== slot) S.session.choice[i] = today_[today_.length - 1].exercise;
   });
   var firstOpen = rows.findIndex(function (_, i) { return !slotDone(i); });
   S.session.idx = firstOpen < 0 ? 0 : firstOpen;
@@ -279,9 +313,9 @@ function slotDone(i) { return doneSets(i).length >= plannedSets(slots()[i]); }
 function allDone() { return slots().every(function (_, i) { return slotDone(i); }); }
 function prepareInputs() {
   var row = curRow(), name = curName(), d = doneSets();
-  if (d.length) { var l = d[d.length - 1]; S.session.inputs = { w: l.weight, r: l.reps, rir: null }; return; }
+  if (d.length) { var l = d[d.length - 1]; S.session.inputs = { w: l.weight, r: l.reps, rir: null, warm: false }; return; }
   var rec = recommend(row, name);
-  S.session.inputs = { w: rec.w, r: rec.r, rir: null };
+  S.session.inputs = { w: rec.w, r: rec.r, rir: null, warm: false };
 }
 function goTo(i) { S.session.idx = i; prepareInputs(); saveSession(); }
 function nextOpenSlot(from) {
@@ -295,17 +329,25 @@ function saveSet() {
   var w = num(inp.w), r = num(inp.r);
   if (r === null || r <= 0) { toast('צריך לרשום כמה חזרות עשית'); return; }
   if (w === null && !isBody(row)) { toast('צריך לרשום משקל'); return; }
-  var setNo = doneSets().length + 1;
+  var warm = !!inp.warm;
+  var setNo = warm ? 0 : doneSets().length + 1;
   var rec = {
     id: uid(), date: S.session.date, workout: S.session.workout, exercise: name,
     muscle: String(row['שריר עיקרי'] || ''), set: setNo, weight: w === null ? 0 : w,
-    weightType: weightType(row), reps: r, rir: inp.rir === null ? '' : inp.rir, note: '',
+    weightType: weightType(row), reps: r, rir: warm || inp.rir === null ? '' : inp.rir, note: warm ? WARM : '',
     slot: String(row['תרגיל']), gym: S.session.gym || HOME_GYM
   };
-  S.session.sets[S.session.idx].push(rec);
   S.data.log.push(rec);
   var q = load(KEY_QUEUE) || []; q.push(rec); store(KEY_QUEUE, q);
   flush();
+  if (warm) {
+    // סט חימום: לא נספר, לא משפיע על ההמלצה, ומנוחה קצרה של דקה
+    warmSets().push(rec);
+    prepareInputs(); saveSession();
+    startRest(60, rec);
+    return;
+  }
+  S.session.sets[S.session.idx].push(rec);
 
   var wasLastOfSlot = slotDone(S.session.idx);
   if (allDone()) { saveSession(); S.screen = 'summary'; render(); return; }
@@ -382,6 +424,12 @@ function deleteEdit() {
     if (r.set !== i + 1) { r.set = i + 1; var l = logRec(r.id); if (l) l.set = i + 1; queueUpdate(r.id, { set: i + 1 }); }
   });
   S.sheet = null; S.edit = null; prepareInputs(); saveSession(); render(); flush(); toast('הסט נמחק');
+}
+function deleteWarm(k) {
+  var ws = warmSets(), s = ws[k]; if (!s) return;
+  ws.splice(k, 1);
+  S.data.log = S.data.log.filter(function (r) { return r.id !== s.id; });
+  queueDelete(s.id); saveSession(); render(); flush(); toast('סט החימום נמחק');
 }
 function viewEdit() {
   var row = curRow(), ed = S.edit, rirs = ['0', '1', '2', '3', '4+'];
@@ -587,7 +635,8 @@ function doneSetsSafe() { try { return doneSets().length; } catch (e) { return 0
 function renderSheet() {
   var o = document.getElementById('overlay');
   if (!S.sheet) { o.innerHTML = ''; return; }
-  o.innerHTML = '<div class="sheet-wrap" data-act="closeSheet"><div class="sheet" data-stop="1">' + (S.sheet === 'muscle' ? viewMuscle() : S.sheet === 'edit' ? viewEdit() : viewSwap()) + '</div></div>';
+  o.innerHTML = '<div class="sheet-wrap" data-act="closeSheet"><div class="sheet" data-stop="1">' + (S.sheet === 'muscle' ? viewMuscle() : S.sheet === 'edit' ? viewEdit() : S.sheet === 'picker' ? viewPicker() : viewSwap()) + '</div></div>';
+  if (S.sheet === 'picker') initWheels();
 }
 
 function viewHome() {
@@ -597,7 +646,7 @@ function viewHome() {
   h += '<div class="gyms" role="group" aria-label="באיזה מכון">' + GYMS.map(function (x) {
     return '<button class="gym' + (x === g ? ' on' : '') + '" data-act="gym" data-v="' + x + '" aria-pressed="' + (x === g) + '"><b>' + x + '</b><span>' + GYM_CITY[x] + '</span></button>';
   }).join('') + '</div>';
-  h += '<h1 style="font-size:30px;margin-top:2px">באיזה אימון<br>אתה היום?</h1>';
+  h += '<h1 class="big" style="margin-top:2px">באיזה אימון<br>אתה היום?</h1>';
   var active = S.session && S.session.date === t && !allDoneFor(S.session) ? S.session.workout : null;
   var hotN = active;
   if (hotN === null) {
@@ -614,8 +663,8 @@ function viewHome() {
     var status = inProgress ? 'באמצע, להמשיך' : lastD && lastD >= ws ? 'בוצע השבוע · ' + ddmm(lastD) : lastD ? 'לאחרונה ' + ddmm(lastD) : 'עוד לא בוצע';
     var hot = hotN === w.n;
     h += '<button class="card' + (hot ? ' hot' : '') + '" data-act="start" data-n="' + w.n + '">' +
-      '<div class="between" style="width:100%"><span style="font-size:19px;font-weight:800">אימון ' + w.n + '</span><span class="muted" style="font-weight:' + (hot ? 700 : 400) + '">' + esc(status) + '</span></div>' +
-      '<span style="font-size:14px;font-weight:500">' + esc(muscles.slice(0, 4).join(' · ')) + '</span>' +
+      '<div class="between" style="width:100%"><span class="wtitle">אימון ' + w.n + '</span><span class="status">' + esc(status) + '</span></div>' +
+      '<span class="wmus">' + esc(muscles.slice(0, 4).join(' · ')) + '</span>' +
       '<span class="muted">' + w.rows.length + ' תרגילים · ' + sets + ' סטים</span></button>';
   });
   return h;
@@ -636,16 +685,23 @@ function viewEx() {
     '<div style="display:flex;flex-direction:column;gap:6px;flex-grow:1"><div class="between"><span class="muted">אימון ' + S.session.workout + ' · תרגיל ' + (i + 1) + ' מתוך ' + rows.length + '</span><span id="sync">' + syncHtml() + '</span></div>' +
     '<div class="progress"><div style="width:' + pct + '%"></div></div></div></div>';
 
-  h += '<div style="display:flex;flex-direction:column;gap:6px"><div class="row" style="gap:6px;flex-wrap:wrap"><span class="chip">' + esc(row['שריר עיקרי']) + '</span>' + (isCore(row) ? '<span class="chip solid">מרכזי</span>' : '') + (swapped ? '<span class="chip warn">חלופה</span>' : '') + (isMachine(name) ? '<span class="chip">מכונה · ' + esc(S.session.gym || HOME_GYM) + '</span>' : '') + '</div>' +
+  h += '<div style="display:flex;flex-direction:column;gap:8px">' +
     '<h1>' + esc(name) + '</h1>' +
+    '<div class="row" style="gap:6px;flex-wrap:wrap"><span class="chip">' + esc(row['שריר עיקרי']) + '</span>' + (isCore(row) ? '<span class="chip solid">מרכזי</span>' : '') + (swapped ? '<span class="chip warn">חלופה</span>' : '') + (isMachine(name) ? '<span class="chip">מכונה · ' + esc(S.session.gym || HOME_GYM) + '</span>' : '') + '</div>' +
     '<span class="muted">יעד: ' + planned + ' סטים · ' + targetReps(row) + ' חזרות' + (rr ? ' · ' + rr[0] + ' עד ' + rr[1] + ' בטנק' : '') + ' · מנוחה ' + Math.floor(restSecs(row) / 60) + ':' + String(restSecs(row) % 60).padStart(2, '0') + (row['הערות'] ? ' · ' + esc(row['הערות']) : '') + '</span></div>';
 
   h += '<div class="grid2"><button class="btn2" data-act="muscle">' + ICON.body + 'שרירים בתרגיל</button><button class="btn2" data-act="swap"' + (alts(row).length ? '' : ' disabled style="opacity:.4"') + '>' + ICON.swap + 'החלפה</button></div>';
 
   if (!d.length) {
-    h += '<div class="rec"><div class="between"><span style="font-size:13px;color:var(--accent);font-weight:700">המלצה להיום</span><span style="font-size:18px;font-weight:800">' + ltr((rec.w === null ? '?' : fmt(rec.w) + unitShort(row)) + ' × ' + rec.r) + '</span></div><span style="font-size:13px;line-height:1.5" class="soft">' + esc(rec.text) + '</span></div>';
+    h += '<div class="rec"><div class="between"><span style="font-size:13px;color:var(--accent);font-weight:600">המלצה להיום</span><span style="font-size:19px;font-weight:700">' + ltr((rec.w === null ? '?' : fmt(rec.w) + unitShort(row)) + ' × ' + rec.r) + '</span></div><span style="font-size:13px;line-height:1.5" class="soft">' + esc(rec.text) + '</span></div>';
   }
 
+  var ws = warmSets();
+  if (ws.length) {
+    h += '<div class="warms"><span class="muted" style="font-size:12px">חימום:</span>' + ws.map(function (s, k) {
+      return '<button class="warmpill" data-act="warmDel" data-k="' + k + '" aria-label="מחיקת סט חימום">' + ICON.flame + pair(s.weight, s.reps) + '</button>';
+    }).join('') + '</div>';
+  }
   h += '<div class="sets" style="--n:' + planned + '">';
   for (var k = 1; k <= planned; k++) {
     var s = d[k - 1];
@@ -660,18 +716,72 @@ function viewEx() {
   }
 
   var rirs = ['0', '1', '2', '3', '4+'];
-  h += '<div class="inputs"><div class="grid2" style="gap:12px">' +
-    '<div class="stepper"><span class="muted">' + weightLabel(row) + '</span><div class="row"><button class="step" data-act="w+" aria-label="הוסף משקל">+</button><input class="num" id="inW" type="number" inputmode="decimal" step="any" value="' + (inp.w === null ? '' : esc(inp.w)) + '" aria-label="משקל"><button class="step" data-act="w-" aria-label="הורד משקל">−</button></div></div>' +
-    '<div class="stepper"><span class="muted">חזרות</span><div class="row"><button class="step" data-act="r+" aria-label="הוסף חזרה">+</button><input class="num" id="inR" type="number" inputmode="numeric" value="' + (inp.r === null ? '' : esc(inp.r)) + '" aria-label="חזרות" style="width:52px"><button class="step" data-act="r-" aria-label="הורד חזרה">−</button></div></div></div>' +
-    '<div style="display:flex;flex-direction:column;gap:8px"><span class="muted">כמה חזרות נשארו לך בטנק?</span><div class="rirs">' +
+  var wTxt = inp.w === null || inp.w === '' ? '—' : fmt(inp.w), rTxt = inp.r === null || inp.r === '' ? '—' : String(inp.r);
+  h += '<div class="inputs">' +
+    '<button class="warmtog' + (inp.warm ? ' on' : '') + '" data-act="warm" aria-pressed="' + !!inp.warm + '">' + ICON.flame + (inp.warm ? 'סט חימום' : 'לסמן כחימום') + '</button>' +
+    '<div class="grid2" style="gap:12px">' +
+    '<div class="field"><span class="muted">' + weightLabel(row) + '</span><button class="val' + (wTxt === '—' ? ' empty' : '') + '" id="valW" data-act="picker" aria-label="בחירת משקל">' + wTxt + '</button>' +
+    '<div class="nudge"><button class="mini" data-act="w+" aria-label="הוסף משקל">+</button><button class="mini" data-act="w-" aria-label="הורד משקל">−</button></div></div>' +
+    '<div class="field"><span class="muted">חזרות</span><button class="val' + (rTxt === '—' ? ' empty' : '') + '" id="valR" data-act="picker" aria-label="בחירת חזרות">' + rTxt + '</button>' +
+    '<div class="nudge"><button class="mini" data-act="r+" aria-label="הוסף חזרה">+</button><button class="mini" data-act="r-" aria-label="הורד חזרה">−</button></div></div></div>' +
+    (inp.warm ? '' : '<div style="display:flex;flex-direction:column;gap:8px"><span class="muted">כמה חזרות נשארו לך בטנק?</span><div class="rirs">' +
     rirs.map(function (r) { return '<button class="rir' + (inp.rir === r ? ' on' : '') + '" data-act="rir" data-v="' + r + '">' + ltr(r) + '</button>'; }).join('') +
-    '</div></div></div>';
+    '</div></div>') + '</div>';
 
   h += '<div style="margin-top:auto;display:flex;flex-direction:column;gap:6px">';
-  h += '<button class="btn" data-act="save">' + (finished ? 'סט נוסף' : 'סיימתי סט ' + setNo) + '</button>';
+  h += inp.warm ? '<button class="btn warmbtn" data-act="save">סיימתי סט חימום</button>'
+    : '<button class="btn" data-act="save">' + (finished ? 'סט נוסף' : 'סיימתי סט ' + setNo) + '</button>';
   h += '<div class="grid2"><button class="btn link" data-act="prev"' + (i === 0 ? ' disabled style="opacity:.35"' : '') + '>לתרגיל הקודם</button><button class="btn link" data-act="next">' + (i === rows.length - 1 ? 'לסיים אימון' : 'לתרגיל הבא') + '</button></div>';
   h += '</div>';
   return h;
+}
+
+/* ===================== גלגלת בחירה ===================== */
+var WHEEL_ITEM = 44;
+function weightOptions(row, cur) {
+  // כל חצי קילו, וגם כל קפיצה של התרגיל (למשל 1.25), כדי שכל משקולת אמיתית תופיע
+  var st = stepOf(row), top = Math.max(isBody(row) ? 60 : 160, (num(cur) || 0) * 1.6 + 20), seen = {}, out = [];
+  var add = function (v) { v = Math.round(v * 100) / 100; if (!seen[v]) { seen[v] = true; out.push(v); } };
+  for (var i = 0; i * 0.5 <= top + 1e-9; i++) add(i * 0.5);
+  for (var j = 0; j * st <= top + 1e-9; j++) add(j * st);
+  var c = num(cur); if (c !== null && c >= 0) add(c);
+  return out.sort(function (x, y) { return x - y; });
+}
+function repOptions() { var o = []; for (var i = 1; i <= 50; i++) o.push(i); return o; }
+function viewPicker() {
+  var row = curRow(), inp = S.session.inputs;
+  var wo = weightOptions(row, inp.w), ro = repOptions();
+  S.pick = { wo: wo, ro: ro, warm: !!inp.warm };
+  var col = function (id, label, opts, unit) {
+    return '<div class="wheelbox"><span class="muted" style="text-align:center">' + label + '</span><div class="band"></div><div class="wheel" id="' + id + '">' +
+      opts.map(function (v) { return '<div class="it">' + fmt(v) + unit + '</div>'; }).join('') + '</div></div>';
+  };
+  return '<div class="grabber"></div><div class="between"><h1 style="font-size:20px">' + esc(curName()) + '</h1><button class="iconbtn" style="background:var(--surface2)" data-act="closeSheet" aria-label="סגירה">' + ICON.close + '</button></div>' +
+    '<div class="wheels">' + col('wheelW', weightLabel(row) + ' (ק״ג)', wo, '') + col('wheelR', 'חזרות', ro, '') + '</div>' +
+    '<button class="warmtog' + (S.pick.warm ? ' on' : '') + '" id="pickWarm" data-act="pickWarm" style="align-self:center">' + ICON.flame + 'סט חימום</button>' +
+    '<button class="btn" data-act="pickOk">אישור</button>';
+}
+function wheelIndex(el) { return Math.max(0, Math.min(el.children.length - 1, Math.round(el.scrollTop / WHEEL_ITEM))); }
+function markWheel(el) { var k = wheelIndex(el); for (var i = 0; i < el.children.length; i++) el.children[i].classList.toggle('sel', i === k); }
+function initWheels() {
+  var inp = S.session.inputs;
+  var set = function (id, opts, cur, fallback) {
+    var el = document.getElementById(id); if (!el) return;
+    var k = opts.indexOf(num(cur)); if (k < 0) k = opts.indexOf(fallback); if (k < 0) k = 0;
+    el.scrollTop = k * WHEEL_ITEM; markWheel(el);
+    el.addEventListener('scroll', function () { markWheel(el); }, { passive: true });
+    el.addEventListener('click', function (e) { var it = e.target.closest('.it'); if (it) el.scrollTo({ top: Array.prototype.indexOf.call(el.children, it) * WHEEL_ITEM, behavior: 'smooth' }); });
+  };
+  set('wheelW', S.pick.wo, inp.w, 0);
+  set('wheelR', S.pick.ro, inp.r, 8);
+}
+function pickerOk() {
+  var inp = S.session.inputs;
+  inp.w = S.pick.wo[wheelIndex(document.getElementById('wheelW'))];
+  inp.r = S.pick.ro[wheelIndex(document.getElementById('wheelR'))];
+  inp.warm = S.pick.warm;
+  if (inp.warm) inp.rir = null;
+  S.sheet = null; S.pick = null; saveSession(); renderSheet(); render();
 }
 
 function viewMuscle() {
@@ -712,7 +822,7 @@ function viewRest() {
   var nextSet = doneSets().length + 1;
   var after = nextOpenSlot(i);
   var nextName = curName();
-  var h = '<div class="banner"><div class="dot">' + ICON.check + '</div><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:700;color:#E2FF8A">סט ' + r.set + ' נשמר</span><span class="soft" style="font-size:13px">' + esc(r.exercise) + ' · ' + pair(r.weight, r.reps) + (r.rir !== '' ? ' · ' + ltr(r.rir) + ' בטנק' : '') + '</span></div></div>';
+  var h = '<div class="banner"><div class="dot">' + ICON.check + '</div><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:700;color:#E2FF8A">' + (isWarm(r) ? 'סט חימום נשמר' : 'סט ' + r.set + ' נשמר') + '</span><span class="soft" style="font-size:13px">' + esc(r.exercise) + ' · ' + pair(r.weight, r.reps) + (r.rir !== '' ? ' · ' + ltr(r.rir) + ' בטנק' : '') + '</span></div></div>';
   h += '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:8px"><span class="muted" id="restlabel" style="font-size:15px">מנוחה</span>' +
     '<div class="ring"><svg width="240" height="240" viewBox="0 0 240 240" aria-hidden="true"><circle cx="120" cy="120" r="100" fill="none" stroke="#2A2E33" stroke-width="14"/><circle id="ringfg" cx="120" cy="120" r="100" fill="none" stroke="#C6F432" stroke-width="14" stroke-linecap="round" stroke-dasharray="628" stroke-dashoffset="' + (628 * (1 - left / S.rest.total)) + '" transform="rotate(-90 120 120)"/></svg>' +
     '<div class="center"><span class="timer" id="timer">' + Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0') + '</span><span class="muted">מתוך ' + Math.floor(S.rest.total / 60) + ':' + String(S.rest.total % 60).padStart(2, '0') + '</span></div></div>' +
@@ -771,14 +881,19 @@ document.addEventListener('click', function (e) {
     case 'w+': case 'w-': {
       var st = stepOf(curRow()), w = num(inp.w) || 0;
       inp.w = Math.max(0, Math.round((w + (a === 'w+' ? st : -st)) * 100) / 100);
-      document.getElementById('inW').value = inp.w; saveSession(); break;
+      saveSession(); render(); break;
     }
     case 'r+': case 'r-': {
       var r = num(inp.r) || 0; inp.r = Math.max(0, r + (a === 'r+' ? 1 : -1));
-      document.getElementById('inR').value = inp.r; saveSession(); break;
+      saveSession(); render(); break;
     }
     case 'rir': inp.rir = inp.rir === el.dataset.v ? null : el.dataset.v; saveSession(); render(); break;
     case 'save': saveSet(); break;
+    case 'warm': inp.warm = !inp.warm; if (inp.warm) inp.rir = null; saveSession(); render(); break;
+    case 'picker': S.sheet = 'picker'; renderSheet(); break;
+    case 'pickWarm': S.pick.warm = !S.pick.warm; el.classList.toggle('on', S.pick.warm); break;
+    case 'pickOk': pickerOk(); break;
+    case 'warmDel': if (confirm('למחוק את סט החימום?')) deleteWarm(Number(el.dataset.k)); break;
     case 'prev': goTo(S.session.idx - 1); render(); break;
     case 'next':
       if (S.session.idx === slots().length - 1) { S.screen = 'summary'; render(); }
